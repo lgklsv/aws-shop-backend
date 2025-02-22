@@ -12,7 +12,7 @@
       "yarn.lock",
       "node_modules",
       "test",
-      "lambde/__test__"
+      "lambda/__test__"
     ]
   },
   "context": {

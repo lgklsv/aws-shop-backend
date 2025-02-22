@@ -1,7 +1,6 @@
 {
   "name": "product_service",
   "version": "0.1.0",
-  "type": "module",
   "bin": {
     "product_service": "bin/product_service.js"
   },
