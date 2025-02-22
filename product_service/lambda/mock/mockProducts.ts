@@ -1,4 +1,6 @@
-export const mockProducts = [
+import { Product } from "../types/product";
+
+export const mockProducts: Product[] = [
   {
     id: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
     title: "Ergonomic Wooden Chair",
