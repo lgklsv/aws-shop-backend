@@ -10,6 +10,7 @@ export const handler = async (event: APIGatewayEvent) => {
       return {
         statusCode: 404,
         headers: {
+          "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ message: "Product not found" }),
@@ -19,6 +20,7 @@ export const handler = async (event: APIGatewayEvent) => {
     return {
       statusCode: 200,
       headers: {
+        "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json",
       },
       body: JSON.stringify(product),
@@ -28,6 +30,7 @@ export const handler = async (event: APIGatewayEvent) => {
     return {
       statusCode: 500,
       headers: {
+        "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ error: "Internal Server Error" }),
