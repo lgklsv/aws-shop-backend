@@ -4,7 +4,7 @@ import { getProductsById } from "./logic/getProductsByIdLogic";
 export const handler = async (event: APIGatewayEvent) => {
   try {
     const productId = event.pathParameters?.id;
-    const product = getProductsById(productId);
+    const product = await getProductsById(productId);
 
     if (!product) {
       return {
