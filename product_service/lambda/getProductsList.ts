@@ -2,6 +2,11 @@ import { APIGatewayEvent } from "aws-lambda";
 import { getProductsList } from "./logic/getProductsLogic";
 
 exports.handler = async (event: APIGatewayEvent) => {
+  console.log("Incoming Request:", {
+    path: event.path,
+    method: event.httpMethod,
+  });
+
   try {
     const products = await getProductsList();
 
