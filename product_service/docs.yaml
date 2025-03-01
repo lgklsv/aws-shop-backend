@@ -2,7 +2,7 @@ swagger: "2.0"
 info:
   version: "1.0.0"
   title: "Products API"
-  description: "API for retrieving product information"
+  description: "API for retrieving and managing product information"
 
 host: "pfwblnli9d.execute-api.us-east-1.amazonaws.com"
 basePath: "/prod"
@@ -40,6 +40,45 @@ paths:
           examples:
             application/json:
               message: "Internal Server Error"
+
+    post:
+      summary: "Create a new product"
+      description: "Creates a new product with stock, ensuring transactional integrity."
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/ProductRequest"
+      responses:
+        "201":
+          description: "Product successfully created"
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+          examples:
+            application/json:
+              message: "Product and stock created successfully"
+        "400":
+          description: "Bad request (missing or invalid fields)"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              message: "Missing required fields"
+        "500":
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              message: "Transaction failed"
 
   /products/{id}:
     get:
@@ -92,6 +131,20 @@ definitions:
       price:
         type: "number"
         format: "float"
+
+  ProductRequest:
+    type: "object"
+    properties:
+      title:
+        type: "string"
+      description:
+        type: "string"
+      price:
+        type: "number"
+        format: "float"
+      count:
+        type: "integer"
+        description: "Stock count for the product"
 
   Error:
     type: "object"

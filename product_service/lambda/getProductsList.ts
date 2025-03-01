@@ -2,8 +2,13 @@ import { APIGatewayEvent } from "aws-lambda";
 import { getProductsList } from "./logic/getProductsLogic";
 
 exports.handler = async (event: APIGatewayEvent) => {
+  console.log("Incoming Request:", {
+    path: event.path,
+    method: event.httpMethod,
+  });
+
   try {
-    const products = getProductsList();
+    const products = await getProductsList();
 
     return {
       statusCode: 200,
@@ -21,7 +26,12 @@ exports.handler = async (event: APIGatewayEvent) => {
         "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ error: "Internal Server Error" }),
+      body: JSON.stringify({
+        error:
+          error && typeof error === "object" && "message" in error
+            ? error.message
+            : "Internal Server Error",
+      }),
     };
   }
 };
