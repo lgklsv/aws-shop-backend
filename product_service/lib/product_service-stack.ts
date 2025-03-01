@@ -19,7 +19,6 @@ export class ProductServiceStack extends cdk.Stack {
       "stocks",
     );
 
-
     const getProductsListFunction = new lambda.Function(
       this,
       "GetProductsListFunction",
@@ -54,6 +53,23 @@ export class ProductServiceStack extends cdk.Stack {
     productsTable.grantReadData(getProductsByIdFunction);
     stocksTable.grantReadData(getProductsByIdFunction);
 
+    const createProductFunction = new lambda.Function(
+      this,
+      "CreateProductFunction",
+      {
+        runtime: lambda.Runtime.NODEJS_20_X,
+        code: lambda.Code.fromAsset("lambda"),
+        handler: "createProduct.handler",
+        environment: {
+          PRODUCTS_TABLE: productsTable.tableName,
+          STOCKS_TABLE: stocksTable.tableName,
+        },
+      },
+    );
+
+    productsTable.grantReadWriteData(createProductFunction);
+    stocksTable.grantReadWriteData(createProductFunction);
+
     const api = new apigateway.LambdaRestApi(this, "ProductsApi", {
       handler: getProductsListFunction,
       proxy: false,
@@ -69,6 +85,11 @@ export class ProductServiceStack extends cdk.Stack {
     productsResource.addMethod(
       "GET",
       new apigateway.LambdaIntegration(getProductsListFunction),
+    );
+
+    productsResource.addMethod(
+      "POST",
+      new apigateway.LambdaIntegration(createProductFunction),
     );
 
     const productByIdResource = productsResource.addResource("{id}");
