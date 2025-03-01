@@ -1,0 +1,100 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Products API"
+  description: "API for retrieving product information"
+
+host: "pfwblnli9d.execute-api.us-east-1.amazonaws.com"
+basePath: "/prod"
+schemes:
+  - "https"
+
+paths:
+  /products:
+    get:
+      summary: "Get list of all products"
+      description: "Fetches all available products from the database."
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "Successful response with a list of products"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Product"
+          examples:
+            application/json:
+              - id: "123"
+                title: "Sample Product 1"
+                description: "This is a description for Product 1."
+                price: 29.99
+              - id: "456"
+                title: "Sample Product 2"
+                description: "This is a description for Product 2."
+                price: 49.99
+        "500":
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              message: "Internal Server Error"
+
+  /products/{id}:
+    get:
+      summary: "Get product by ID"
+      description: "Fetches a single product by its ID."
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: "ID of the product to retrieve"
+          type: "string"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "Successful response with product details"
+          schema:
+            $ref: "#/definitions/Product"
+          examples:
+            application/json:
+              id: "123"
+              title: "Sample Product"
+              description: "This is a detailed description of the product."
+              price: 29.99
+        "404":
+          description: "Product not found"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              message: "Product not found"
+        "500":
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              message: "Internal Server Error"
+
+definitions:
+  Product:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+      title:
+        type: "string"
+      description:
+        type: "string"
+      price:
+        type: "number"
+        format: "float"
+
+  Error:
+    type: "object"
+    properties:
+      message:
+        type: "string"
