@@ -1,7 +1,8 @@
 import { APIGatewayEvent } from "aws-lambda";
-import { S3 } from "aws-sdk";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const s3 = new S3();
+const s3 = new S3Client({});
 const BUCKET_NAME = process.env.BUCKET_NAME;
 
 export const handler = async (event: APIGatewayEvent) => {
@@ -19,11 +20,14 @@ export const handler = async (event: APIGatewayEvent) => {
       };
     }
 
-    const url = s3.getSignedUrl("getObject", {
-      Bucket: BUCKET_NAME,
-      Key: `uploaded/${fileName}`,
-      Expires: 60,
-    });
+    const url = await getSignedUrl(
+      s3,
+      new GetObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: `uploaded/${fileName}`,
+      }),
+      { expiresIn: 60 },
+    );
 
     return {
       statusCode: 200,
