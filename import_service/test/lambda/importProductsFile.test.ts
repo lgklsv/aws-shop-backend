@@ -1,6 +1,6 @@
 import { APIGatewayEvent } from "aws-lambda";
 import { mockClient } from "aws-sdk-client-mock";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { handler } from "../../lambda/importProductsFile";
 
@@ -29,7 +29,7 @@ describe("importProductsFile lambda function", () => {
     expect(getSignedUrl).toHaveBeenCalled();
     expect(getSignedUrl).toHaveBeenCalledWith(
       expect.any(S3Client),
-      expect.any(GetObjectCommand),
+      expect.any(PutObjectCommand),
       { expiresIn: 60 },
     );
   });

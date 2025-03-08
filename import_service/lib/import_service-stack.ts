@@ -1,8 +1,14 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as s3 from "aws-cdk-lib/aws-s3";
-import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as s3n from "aws-cdk-lib/aws-s3-notifications";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
+import * as iam from "aws-cdk-lib/aws-iam";
+import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
+import path from "node:path";
+import { Runtime } from "aws-cdk-lib/aws-lambda";
+
+const UPLOADED_FOLDER = "uploaded/";
 
 export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -14,20 +20,54 @@ export class ImportServiceStack extends cdk.Stack {
       "lgklsv-import-service-bucket",
     );
 
-    const importProductsFileFunction = new lambda.Function(
+    const importProductsFileFunction = new lambdaNodejs.NodejsFunction(
       this,
       "ImportProductsFileFunction",
       {
-        runtime: lambda.Runtime.NODEJS_20_X,
-        code: lambda.Code.fromAsset("lambda"),
-        handler: "importProductsFile.handler",
+        runtime: Runtime.NODEJS_22_X,
+        entry: path.join(__dirname, "../lambda/importProductsFile.ts"),
+        handler: "handler",
         environment: {
           BUCKET_NAME: bucket.bucketName,
         },
       },
     );
 
-    bucket.grantRead(importProductsFileFunction);
+    bucket.grantReadWrite(importProductsFileFunction);
+
+    const importFileParserFunction = new lambdaNodejs.NodejsFunction(
+      this,
+      "ImportFileParserFunction",
+      {
+        runtime: Runtime.NODEJS_22_X,
+        entry: path.join(__dirname, "../lambda/importFileParser.ts"),
+        handler: "handler",
+        environment: {
+          BUCKET_NAME: bucket.bucketName,
+        },
+        bundling: {
+          nodeModules: ["csv-parser"],
+        },
+      },
+    );
+
+    bucket.grantReadWrite(importFileParserFunction);
+
+    const policy = new iam.PolicyStatement({
+      actions: ["s3:PutObject", "s3:DeleteObject"],
+      resources: [
+        `${bucket.bucketArn}/parsed/*`,
+        `${bucket.bucketArn}/uploaded/*`,
+      ],
+    });
+
+    importFileParserFunction.addToRolePolicy(policy);
+
+    bucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED,
+      new s3n.LambdaDestination(importFileParserFunction),
+      { prefix: UPLOADED_FOLDER },
+    );
 
     const api = new apigateway.LambdaRestApi(this, "ImportProductsApi", {
       handler: importProductsFileFunction,
