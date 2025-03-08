@@ -5,7 +5,7 @@ import {
   CopyObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
-import * as csv from "csv-parser";
+import csv from "csv-parser";
 import { Readable } from "stream";
 
 const s3 = new S3Client();
