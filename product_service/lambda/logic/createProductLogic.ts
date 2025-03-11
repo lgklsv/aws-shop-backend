@@ -45,5 +45,5 @@ export async function createProductLogic(body: Omit<Product, "id">) {
   const result = await dynamoDB.send(
     new TransactWriteCommand(transactionParams),
   );
-  console.log("DynamoDB Transaction executed successfully", result);
+  console.log("Product created successfully", result);
 }
