@@ -1,5 +1,8 @@
 import { SQSEvent } from "aws-lambda";
 import { createProductLogic } from "./logic/createProductLogic";
+import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
+
+const snsClient = new SNSClient({});
 
 export const handler = async (event: SQSEvent) => {
   try {
@@ -30,7 +33,34 @@ export const handler = async (event: SQSEvent) => {
         continue;
       }
 
-      await createProductLogic(product);
+      const createdProduct = await createProductLogic(product);
+
+      const topicArn = process.env.SNS_TOPIC_ARN;
+      if (topicArn) {
+        const message = {
+          Message: JSON.stringify({
+            message: "New product created via catalog batch process!",
+            productId: createdProduct.id,
+            productTitle: product.title,
+            productPrice: product.price,
+          }),
+          TopicArn: topicArn,
+        };
+
+        const command = new PublishCommand(message);
+
+        try {
+          await snsClient.send(command);
+          console.log(
+            "Message published to SNS topic for product:",
+            createdProduct.id,
+          );
+        } catch (err) {
+          console.error("Error publishing message:", err);
+        }
+      } else {
+        console.error("SNS_TOPIC_ARN environment variable is not set.");
+      }
     }
 
     return {

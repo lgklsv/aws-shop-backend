@@ -12,7 +12,9 @@ const dynamoDB = DynamoDBDocumentClient.from(client);
 const PRODUCTS_TABLE = process.env.PRODUCTS_TABLE as string;
 const STOCKS_TABLE = process.env.STOCKS_TABLE as string;
 
-export async function createProductLogic(body: Omit<Product, "id">) {
+export async function createProductLogic(
+  body: Omit<Product, "id">,
+): Promise<Product> {
   const id = randomUUID();
 
   const transactionParams: TransactWriteCommandInput = {
@@ -46,4 +48,6 @@ export async function createProductLogic(body: Omit<Product, "id">) {
     new TransactWriteCommand(transactionParams),
   );
   console.log("Product created successfully", result);
+
+  return { id, ...body };
 }

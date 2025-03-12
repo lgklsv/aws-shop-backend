@@ -5,6 +5,8 @@ import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as sqs from "aws-cdk-lib/aws-sqs";
 import * as lambda_event_sources from "aws-cdk-lib/aws-lambda-event-sources";
+import * as sns from "aws-cdk-lib/aws-sns";
+import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
 
 const BATCH_SIZE = 5;
 
@@ -12,6 +14,7 @@ export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // DynamoDB
     const productsTable = dynamodb.Table.fromTableName(
       this,
       "ProductsTable",
@@ -23,10 +26,21 @@ export class ProductServiceStack extends cdk.Stack {
       "stocks",
     );
 
+    // SQS Queue
     const catalogItemsQueue = new sqs.Queue(this, "CatalogItemsQueue", {
       queueName: "catalogItemsQueue",
     });
 
+    // SNS Topic
+    const createProductTopic = new sns.Topic(this, "CreateProductTopic", {
+      topicName: "createProductTopic",
+    });
+
+    createProductTopic.addSubscription(
+      new subscriptions.EmailSubscription("lgklsv@outlook.com"),
+    );
+
+    // Lambda functions
     const catalogBatchProcessFunction = new lambda.Function(
       this,
       "CatalogBatchProcessFunction",
@@ -37,10 +51,11 @@ export class ProductServiceStack extends cdk.Stack {
         environment: {
           PRODUCTS_TABLE: productsTable.tableName,
           STOCKS_TABLE: stocksTable.tableName,
+          SNS_TOPIC_ARN: createProductTopic.topicArn,
         },
       },
     );
-    
+
     productsTable.grantWriteData(catalogBatchProcessFunction);
 
     catalogBatchProcessFunction.addEventSource(
@@ -100,6 +115,7 @@ export class ProductServiceStack extends cdk.Stack {
     productsTable.grantReadWriteData(createProductFunction);
     stocksTable.grantReadWriteData(createProductFunction);
 
+    // API gateway
     const api = new apigateway.LambdaRestApi(this, "ProductsApi", {
       handler: getProductsListFunction,
       proxy: false,
