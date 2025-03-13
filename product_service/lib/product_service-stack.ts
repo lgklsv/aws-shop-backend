@@ -40,6 +40,16 @@ export class ProductServiceStack extends cdk.Stack {
       new subscriptions.EmailSubscription("lgklsv@outlook.com"),
     );
 
+    createProductTopic.addSubscription(
+      new subscriptions.EmailSubscription("kolosov20011@gmail.com", {
+        filterPolicy: {
+          price: sns.SubscriptionFilter.numericFilter({
+            greaterThan: 300,
+          }),
+        },
+      }),
+    );
+
     // Lambda functions
     const catalogBatchProcessFunction = new lambda.Function(
       this,

@@ -40,9 +40,11 @@ export const handler = async (event: SQSEvent) => {
         const message = {
           Message: JSON.stringify({
             message: "New product created via catalog batch process!",
-            productId: createdProduct.id,
-            productTitle: product.title,
-            productPrice: product.price,
+            id: createdProduct.id,
+            title: createdProduct.title,
+            description: createdProduct.description,
+            price: createdProduct.price,
+            count: createdProduct.count,
           }),
           TopicArn: topicArn,
         };
