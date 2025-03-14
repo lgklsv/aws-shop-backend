@@ -9,6 +9,7 @@ import * as sns from "aws-cdk-lib/aws-sns";
 import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
 
 const BATCH_SIZE = 5;
+const QUEUE_ARN = "arn:aws:sqs:us-east-1:248189940965:catalogItemsQueue";
 
 export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -27,9 +28,11 @@ export class ProductServiceStack extends cdk.Stack {
     );
 
     // SQS Queue
-    const catalogItemsQueue = new sqs.Queue(this, "CatalogItemsQueue", {
-      queueName: "catalogItemsQueue",
-    });
+    const catalogItemsQueue = sqs.Queue.fromQueueArn(
+      this,
+      "CatalogItemsQueue",
+      QUEUE_ARN,
+    );
 
     // SNS Topic
     const createProductTopic = new sns.Topic(this, "CreateProductTopic", {
