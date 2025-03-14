@@ -70,7 +70,7 @@ export class ProductServiceStack extends cdk.Stack {
     );
 
     productsTable.grantWriteData(catalogBatchProcessFunction);
-    stocksTable.grantReadData(catalogBatchProcessFunction);
+    stocksTable.grantWriteData(catalogBatchProcessFunction);
 
     catalogBatchProcessFunction.addEventSource(
       new lambda_event_sources.SqsEventSource(catalogItemsQueue, {
