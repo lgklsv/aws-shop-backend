@@ -58,16 +58,7 @@ export class ImportServiceStack extends cdk.Stack {
     );
 
     bucket.grantReadWrite(importFileParserFunction);
-
-    const policy = new iam.PolicyStatement({
-      actions: ["s3:PutObject", "s3:DeleteObject"],
-      resources: [
-        `${bucket.bucketArn}/parsed/*`,
-        `${bucket.bucketArn}/uploaded/*`,
-      ],
-    });
-
-    importFileParserFunction.addToRolePolicy(policy);
+    catalogItemsQueue.grantSendMessages(importFileParserFunction);
 
     bucket.addEventNotification(
       s3.EventType.OBJECT_CREATED,
