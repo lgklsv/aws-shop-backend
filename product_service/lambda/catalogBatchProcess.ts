@@ -20,12 +20,12 @@ export const handler = async (event: SQSEvent) => {
         continue;
       }
 
-      if (typeof product.price !== "number") {
+      if (Number.isNaN(Number(product.price))) {
         console.error("Invalid price format:", product.price);
         continue;
       }
 
-      if (typeof product.count !== "number" || product.count < 0) {
+      if (Number.isNaN(Number(product.count)) || Number(product.count) < 0) {
         console.error(
           "Count must be a positive number or zero:",
           product.count,
