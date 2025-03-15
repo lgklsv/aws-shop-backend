@@ -7,14 +7,21 @@ import {
 } from "@aws-sdk/client-s3";
 import csv from "csv-parser";
 import { Readable } from "stream";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 
 const s3 = new S3Client();
+const sqs = new SQSClient();
 const BUCKET_NAME = "lgklsv-import-service-bucket";
 const UPLOADED_FOLDER = "uploaded/";
 const PARSED_FOLDER = "parsed/";
+const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
 
 export const handler = async (event: S3Event): Promise<void> => {
   try {
+    if (!SQS_QUEUE_URL) {
+      throw new Error("SQS_QUEUE_URL is not set in environment variables");
+    }
+
     for (const record of event.Records) {
       const bucket = record.s3.bucket.name;
       const key = decodeURIComponent(record.s3.object.key.replace(/\+/g, " "));
@@ -43,8 +50,12 @@ export const handler = async (event: S3Event): Promise<void> => {
       await new Promise((resolve, reject) => {
         stream
           .pipe(csv())
-          .on("data", (row) => {
-            console.log(JSON.stringify(row));
+          .on("data", async (row) => {
+            const messageParams = {
+              QueueUrl: SQS_QUEUE_URL,
+              MessageBody: JSON.stringify(row),
+            };
+            await sqs.send(new SendMessageCommand(messageParams));
           })
           .on("end", () => {
             console.log("CSV Processing Complete.");
