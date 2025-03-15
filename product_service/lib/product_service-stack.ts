@@ -72,10 +72,12 @@ export class ProductServiceStack extends cdk.Stack {
     productsTable.grantWriteData(catalogBatchProcessFunction);
     stocksTable.grantWriteData(catalogBatchProcessFunction);
     createProductTopic.grantPublish(catalogBatchProcessFunction);
+    catalogItemsQueue.grantConsumeMessages(catalogBatchProcessFunction);
 
     catalogBatchProcessFunction.addEventSource(
       new lambda_event_sources.SqsEventSource(catalogItemsQueue, {
         batchSize: BATCH_SIZE,
+        reportBatchItemFailures: true,
       }),
     );
 
