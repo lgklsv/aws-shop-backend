@@ -3,7 +3,6 @@ import { Construct } from "constructs";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as s3n from "aws-cdk-lib/aws-s3-notifications";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
-import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import path from "node:path";
 import { Runtime } from "aws-cdk-lib/aws-lambda";

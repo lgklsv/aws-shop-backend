@@ -1,16 +1,23 @@
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as cdk from "aws-cdk-lib";
+import { Runtime } from "aws-cdk-lib/aws-lambda";
+import { Construct } from "constructs";
+import * as dotenv from "dotenv";
+import path from "node:path";
+import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
+
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
 export class AuthorizationServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
-
-    // example resource
-    // const queue = new sqs.Queue(this, 'AuthorizationServiceQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    new lambdaNodejs.NodejsFunction(this, "BasicAuthorizerFunction", {
+      runtime: Runtime.NODEJS_22_X,
+      entry: path.join(__dirname, "../lambda/basicAuthorizer.ts"),
+      handler: "handler",
+      environment: {
+        lgklsv: process.env.lgklsv!,
+      },
+    });
   }
 }
