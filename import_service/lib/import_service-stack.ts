@@ -14,6 +14,12 @@ export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const authorizerFunction = lambdaNodejs.NodejsFunction.fromFunctionArn(
+      this,
+      "AuthorizerFunction",
+      cdk.Fn.importValue("BasicAuthorizerArn"),
+    );
+
     const bucket = s3.Bucket.fromBucketName(
       this,
       "ImportBucket",
@@ -75,6 +81,10 @@ export class ImportServiceStack extends cdk.Stack {
       },
     });
 
+    const authorizer = new apigateway.TokenAuthorizer(this, "BasicAuthorizer", {
+      handler: authorizerFunction,
+    });
+
     const importResource = api.root.addResource("import");
 
     importResource.addMethod(
@@ -84,6 +94,7 @@ export class ImportServiceStack extends cdk.Stack {
         requestParameters: {
           "method.request.querystring.name": true,
         },
+        authorizer
       },
     );
   }
