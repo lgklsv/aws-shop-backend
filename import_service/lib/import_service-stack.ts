@@ -89,12 +89,45 @@ export class ImportServiceStack extends cdk.Stack {
 
     importResource.addMethod(
       "GET",
-      new apigateway.LambdaIntegration(importProductsFileFunction),
+      new apigateway.LambdaIntegration(importProductsFileFunction, {
+        integrationResponses: [
+          {
+            statusCode: "200",
+            responseParameters: {
+              "method.response.header.Content-Type": "'application/json'",
+            },
+          },
+          {
+            statusCode: "403",
+            selectionPattern: ".*Deny.*", // Or a more specific pattern
+            responseParameters: {
+              "method.response.header.Content-Type": "'application/json'",
+            },
+            responseTemplates: {
+              "application/json": JSON.stringify({ message: "Forbidden" }),
+            },
+          },
+        ],
+      }),
       {
         requestParameters: {
           "method.request.querystring.name": true,
         },
-        authorizer
+        authorizer,
+        methodResponses: [
+          {
+            statusCode: "200",
+            responseParameters: {
+              "method.response.header.Content-Type": true,
+            },
+          },
+          {
+            statusCode: "403",
+            responseParameters: {
+              "method.response.header.Content-Type": true,
+            },
+          },
+        ],
       },
     );
   }

@@ -4,16 +4,15 @@ import { Construct } from "constructs";
 import * as dotenv from "dotenv";
 import path from "node:path";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
+import * as iam from "aws-cdk-lib/aws-iam";
 
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
 export class AuthorizationServiceStack extends cdk.Stack {
-  public readonly basicAuthorizer: lambdaNodejs.NodejsFunction;
-
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    this.basicAuthorizer = new lambdaNodejs.NodejsFunction(
+    const basicAuthorizer = new lambdaNodejs.NodejsFunction(
       this,
       "BasicAuthorizerFunction",
       {
@@ -26,8 +25,14 @@ export class AuthorizationServiceStack extends cdk.Stack {
       },
     );
 
+    basicAuthorizer.addPermission("ApiGatewayInvoke", {
+      principal: new iam.ServicePrincipal("apigateway.amazonaws.com"),
+      action: "lambda:InvokeFunction",
+      sourceArn: `arn:aws:execute-api:${this.region}:${this.account}:sc9u1qk4di/*`,
+    });
+
     new cdk.CfnOutput(this, "BasicAuthorizerArn", {
-      value: this.basicAuthorizer.functionArn,
+      value: basicAuthorizer.functionArn,
       exportName: "BasicAuthorizerArn",
     });
   }

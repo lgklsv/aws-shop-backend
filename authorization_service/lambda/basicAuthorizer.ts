@@ -1,5 +1,4 @@
 import {
-  APIGatewayAuthorizerEvent,
   APIGatewayAuthorizerResult,
   APIGatewayTokenAuthorizerEvent,
   StatementEffect,
@@ -25,22 +24,18 @@ function generatePolicy(
   };
 }
 
-export const handler = async (
-  event: APIGatewayTokenAuthorizerEvent,
-): Promise<
-  APIGatewayAuthorizerResult | { statusCode: number; body: string }
-> => {
+export const handler = async (event: APIGatewayTokenAuthorizerEvent) => {
   const authHeader = event.authorizationToken;
   const methodArn = event.methodArn;
 
   if (!authHeader) {
-    return { statusCode: 401, body: "Unauthorized" };
+    return generatePolicy("user", "Deny", methodArn);
   }
 
   try {
     const [authType, encodedCredentials] = authHeader.split(" ");
     if (authType.toLowerCase() !== "basic") {
-      return { statusCode: 403, body: "Forbidden" };
+      return generatePolicy("user", "Deny", methodArn);
     }
 
     const decodedCredentials = Buffer.from(
@@ -54,9 +49,9 @@ export const handler = async (
     if (expectedPassword && password === expectedPassword) {
       return generatePolicy(username, "Allow", methodArn);
     } else {
-      return { statusCode: 403, body: "Forbidden" };
+      return generatePolicy("user", "Deny", methodArn);
     }
   } catch {
-    return { statusCode: 403, body: "Forbidden" };
+    return generatePolicy("user", "Deny", methodArn);
   }
 };
