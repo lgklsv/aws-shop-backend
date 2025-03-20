@@ -1,8 +1,9 @@
 module.exports = {
   testEnvironment: "node",
-  roots: ["<rootDir>/lambda/__test__"],
+  roots: ["<rootDir>/test"],
   testMatch: ["**/*.test.ts"],
   transform: {
     "^.+\\.tsx?$": "ts-jest",
   },
+  silent: true,
 };

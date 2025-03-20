@@ -7,6 +7,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import path from "node:path";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
+import * as sqs from "aws-cdk-lib/aws-sqs";
 
 const UPLOADED_FOLDER = "uploaded/";
 
@@ -19,6 +20,10 @@ export class ImportServiceStack extends cdk.Stack {
       "ImportBucket",
       "lgklsv-import-service-bucket",
     );
+
+    const catalogItemsQueue = new sqs.Queue(this, "CatalogItemsQueue", {
+      queueName: "catalogItemsQueue",
+    });
 
     const importProductsFileFunction = new lambdaNodejs.NodejsFunction(
       this,
@@ -44,6 +49,7 @@ export class ImportServiceStack extends cdk.Stack {
         handler: "handler",
         environment: {
           BUCKET_NAME: bucket.bucketName,
+          SQS_QUEUE_URL: catalogItemsQueue.queueUrl,
         },
         bundling: {
           nodeModules: ["csv-parser"],
@@ -52,16 +58,7 @@ export class ImportServiceStack extends cdk.Stack {
     );
 
     bucket.grantReadWrite(importFileParserFunction);
-
-    const policy = new iam.PolicyStatement({
-      actions: ["s3:PutObject", "s3:DeleteObject"],
-      resources: [
-        `${bucket.bucketArn}/parsed/*`,
-        `${bucket.bucketArn}/uploaded/*`,
-      ],
-    });
-
-    importFileParserFunction.addToRolePolicy(policy);
+    catalogItemsQueue.grantSendMessages(importFileParserFunction);
 
     bucket.addEventNotification(
       s3.EventType.OBJECT_CREATED,
