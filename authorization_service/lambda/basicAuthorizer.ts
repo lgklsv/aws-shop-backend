@@ -21,10 +21,18 @@ function generatePolicy(
         },
       ],
     },
+    context: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers":
+        "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+      "Access-Control-Allow-Methods": "GET,OPTIONS",
+    },
   };
 }
 
-export const handler = async (event: APIGatewayTokenAuthorizerEvent) => {
+export const handler = async (
+  event: APIGatewayTokenAuthorizerEvent,
+): Promise<APIGatewayAuthorizerResult> => {
   const authHeader = event.authorizationToken;
   const methodArn = event.methodArn;
 

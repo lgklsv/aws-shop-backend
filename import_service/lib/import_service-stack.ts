@@ -71,18 +71,25 @@ export class ImportServiceStack extends cdk.Stack {
       { prefix: UPLOADED_FOLDER },
     );
 
-    const api = new apigateway.LambdaRestApi(this, "ImportProductsApi", {
-      handler: importProductsFileFunction,
-      proxy: false,
+    const api = new apigateway.RestApi(this, "ImportProductsApi", {
+      restApiName: "ImportProductsApi",
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
-        allowHeaders: apigateway.Cors.DEFAULT_HEADERS,
+        allowHeaders: [
+          "Content-Type",
+          "X-Amz-Date",
+          "Authorization",
+          "X-Api-Key",
+          "X-Amz-Security-Token",
+        ],
       },
     });
 
     const authorizer = new apigateway.TokenAuthorizer(this, "BasicAuthorizer", {
       handler: authorizerFunction,
+      identitySource: apigateway.IdentitySource.header("Authorization"),
+      resultsCacheTtl: cdk.Duration.seconds(0),
     });
 
     const importResource = api.root.addResource("import");
@@ -94,14 +101,18 @@ export class ImportServiceStack extends cdk.Stack {
           {
             statusCode: "200",
             responseParameters: {
-              "method.response.header.Content-Type": "'application/json'",
+              "method.response.header.Access-Control-Allow-Origin": "'*'",
+              "method.response.header.Access-Control-Allow-Headers": "'*'",
+              "method.response.header.Access-Control-Allow-Methods": "'*'",
             },
           },
           {
             statusCode: "403",
-            selectionPattern: ".*Deny.*", // Or a more specific pattern
+            selectionPattern: ".*Deny.*",
             responseParameters: {
-              "method.response.header.Content-Type": "'application/json'",
+              "method.response.header.Access-Control-Allow-Origin": "'*'",
+              "method.response.header.Access-Control-Allow-Headers": "'*'",
+              "method.response.header.Access-Control-Allow-Methods": "'*'",
             },
             responseTemplates: {
               "application/json": JSON.stringify({ message: "Forbidden" }),
@@ -114,17 +125,38 @@ export class ImportServiceStack extends cdk.Stack {
           "method.request.querystring.name": true,
         },
         authorizer,
+        authorizationType: apigateway.AuthorizationType.CUSTOM,
         methodResponses: [
           {
             statusCode: "200",
             responseParameters: {
-              "method.response.header.Content-Type": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+            },
+          },
+          {
+            statusCode: "401",
+            responseParameters: {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
             },
           },
           {
             statusCode: "403",
             responseParameters: {
-              "method.response.header.Content-Type": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+            },
+          },
+          {
+            statusCode: "500",
+            responseParameters: {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
             },
           },
         ],
