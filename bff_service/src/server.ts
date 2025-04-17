@@ -1,14 +1,11 @@
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
+import 'dotenv/config';
 
 const server = Fastify();
 
-// TODO: use env variables
-const cartServiceUrl = 'https://k1odwm4mp7.execute-api.us-east-1.amazonaws.com/api';
-const productServiceUrl = 'https://pfwblnli9d.execute-api.us-east-1.amazonaws.com/prod';
-
 const serviceUrls: { [key: string]: string } = {
-  cart: cartServiceUrl,
-  product: productServiceUrl,
+  cart: process.env.CART_SERVICE_URL!,
+  product: process.env.PRODUCT_SERVICE_URL!,
 };
 
 async function forwardRequest(request: FastifyRequest, reply: FastifyReply) {
