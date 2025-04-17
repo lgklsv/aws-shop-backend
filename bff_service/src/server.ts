@@ -1,5 +1,5 @@
-import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
-import 'dotenv/config';
+import Fastify, { FastifyReply, FastifyRequest } from "fastify";
+import "dotenv/config";
 
 const server = Fastify();
 
@@ -9,22 +9,24 @@ const serviceUrls: { [key: string]: string } = {
 };
 
 async function forwardRequest(request: FastifyRequest, reply: FastifyReply) {
-  const { recipientServiceName } = request.params as { recipientServiceName: string };
+  const { recipientServiceName } = request.params as {
+    recipientServiceName: string;
+  };
   const targetServiceUrl = serviceUrls[recipientServiceName];
 
   if (!targetServiceUrl) {
-    return reply.status(502).send({ error: 'Cannot process request' });
+    return reply.status(502).send({ error: "Cannot process request" });
   }
 
-  const targetUrl = `${targetServiceUrl}${request.url.replace(`/${recipientServiceName}`, '')}`;
+  const targetUrl = `${targetServiceUrl}${request.url.replace(`/${recipientServiceName}`, "")}`;
   const method = request.method;
   const headers = { ...request.headers };
-  delete headers['host'];
+  delete headers["host"];
 
   let body = undefined;
-  if (method !== 'GET' && method !== 'HEAD') {
+  if (method !== "GET" && method !== "HEAD") {
     body = request.body ? JSON.stringify(request.body) : undefined;
-    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+    headers["Content-Type"] = headers["Content-Type"] || "application/json";
   }
 
   try {
@@ -39,31 +41,31 @@ async function forwardRequest(request: FastifyRequest, reply: FastifyReply) {
     if (!response.ok) {
       return reply
         .status(response.status)
-        .send({ error: responseData.message || 'Error from backend service' });
+        .send({ error: responseData.message || "Error from backend service" });
     }
 
     reply.status(response.status).send(responseData);
   } catch (error: any) {
-    console.error('Error forwarding request:', error);
-    reply.status(502).send({ error: 'Cannot process request' });
+    console.error("Error forwarding request:", error);
+    reply.status(502).send({ error: "Cannot process request" });
   }
 }
 
-server.get('/health', (req, res) => {
-  return res.send('OK');
+server.get("/health", (req, res) => {
+  return res.send("OK");
 });
 
-server.all('/:recipientServiceName/*', forwardRequest);
-server.all('/:recipientServiceName', forwardRequest);
+server.all("/:recipientServiceName/*", forwardRequest);
+server.all("/:recipientServiceName", forwardRequest);
 
 server.setNotFoundHandler((_, reply) => {
-  reply.status(502).send({ error: 'Cannot process request' });
+  reply.status(502).send({ error: "Cannot process request" });
 });
 
 const start = async () => {
   try {
-    await server.listen({ port: 3000 });
-    console.log('Server listening on port 3000');
+    await server.listen({ port: 3000, host: "0.0.0.0" });
+    console.log("Server listening on port 3000");
   } catch (err) {
     console.error(err);
     process.exit(1);
