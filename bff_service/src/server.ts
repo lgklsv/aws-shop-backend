@@ -13,6 +13,7 @@ async function forwardRequest(request: FastifyRequest, reply: FastifyReply) {
     recipientServiceName: string;
   };
   const targetServiceUrl = serviceUrls[recipientServiceName];
+  console.log("TargetServiceUrl", targetServiceUrl);
 
   if (!targetServiceUrl) {
     return reply.status(502).send({ error: "Cannot process request" });
@@ -20,8 +21,14 @@ async function forwardRequest(request: FastifyRequest, reply: FastifyReply) {
 
   const targetUrl = `${targetServiceUrl}${request.url.replace(`/${recipientServiceName}`, "")}`;
   const method = request.method;
+  console.log("Incoming Headers:", request.headers);
   const headers = { ...request.headers };
   delete headers["host"];
+  delete headers["Host"];
+  delete headers["connection"];
+  delete headers["upgrade"];
+  delete headers["transfer-encoding"];
+  delete headers["proxy-connection"];
 
   let body = undefined;
   if (method !== "GET" && method !== "HEAD") {
@@ -30,6 +37,7 @@ async function forwardRequest(request: FastifyRequest, reply: FastifyReply) {
   }
 
   try {
+    console.log("Outgoing Headers:", headers);
     const response: Response = await fetch(targetUrl, {
       method,
       headers: headers as HeadersInit,
