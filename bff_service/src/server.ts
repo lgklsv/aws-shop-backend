@@ -44,6 +44,10 @@ async function forwardRequest(request: FastifyRequest, reply: FastifyReply) {
       body,
     });
 
+    response.headers.forEach((value, name) => {
+      reply.header(name, value);
+    });
+
     let responseData;
 
     if (response.status !== 204) {
