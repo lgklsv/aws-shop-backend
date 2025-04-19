@@ -35,6 +35,9 @@ async function forwardRequest(request: FastifyRequest, reply: FastifyReply) {
   if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
     body = request.body ? JSON.stringify(request.body) : undefined;
     headers["Content-Type"] = headers["Content-Type"] || "application/json";
+  } else {
+    delete headers["content-type"];
+    delete headers["Content-Type"];
   }
 
   try {
