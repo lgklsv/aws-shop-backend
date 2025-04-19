@@ -28,8 +28,11 @@ async function forwardRequest(request: FastifyRequest, reply: FastifyReply) {
   delete headers["transfer-encoding"];
   delete headers["proxy-connection"];
 
+  delete headers["content-length"];
+  delete headers["Content-Length"];
+
   let body = undefined;
-  if (method !== "GET" && method !== "HEAD") {
+  if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
     body = request.body ? JSON.stringify(request.body) : undefined;
     headers["Content-Type"] = headers["Content-Type"] || "application/json";
   }

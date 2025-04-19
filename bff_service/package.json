@@ -9,7 +9,6 @@
     "start": "node dist/server.js",
     "dev": "pnpm run build && pnpm run start"
   },
-  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -20,7 +19,13 @@
     "node-fetch": "3.3.2"
   },
   "devDependencies": {
+    "@types/aws-lambda": "8.10.149",
     "@types/node": "22.14.1",
+    "aws-cdk-lib": "2.190.0",
+    "aws-lambda": "1.0.7",
+    "constructs": "10.4.2",
+    "ts-node": "10.9.2",
+    "tsconfig-paths": "4.2.0",
     "typescript": "5.8.3"
   }
 }
