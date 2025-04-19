@@ -35,9 +35,6 @@ async function forwardRequest(request: FastifyRequest, reply: FastifyReply) {
   if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
     body = request.body ? JSON.stringify(request.body) : undefined;
     headers["Content-Type"] = headers["Content-Type"] || "application/json";
-  } else {
-    delete headers["content-type"];
-    delete headers["Content-Type"];
   }
 
   try {
@@ -47,12 +44,16 @@ async function forwardRequest(request: FastifyRequest, reply: FastifyReply) {
       body,
     });
 
-    let responseData = await response.json();
+    let responseData;
+
+    if (response.status !== 204) {
+      responseData = await response.json();
+    }
 
     if (!response.ok) {
       return reply
         .status(response.status)
-        .send({ error: responseData.message || "Error from backend service" });
+        .send({ error: responseData?.message || "Error from backend service" });
     }
 
     reply.status(response.status).send(responseData);
