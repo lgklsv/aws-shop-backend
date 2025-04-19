@@ -1,7 +1,10 @@
 import Fastify, { FastifyReply, FastifyRequest } from "fastify";
+import formBody from "@fastify/formbody";
 import "dotenv/config";
 
 const server = Fastify();
+
+server.register(formBody);
 
 const serviceUrls: { [key: string]: string } = {
   cart: process.env.CART_SERVICE_URL!,
